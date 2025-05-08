@@ -741,6 +741,18 @@ function setupFileUpload() {
     });
 }
 
+// Show or hide upload progress indicator
+function showUploadProgress(show) {
+    const uploadProgress = document.getElementById('uploadProgress');
+    if (uploadProgress) {
+        if (show) {
+            uploadProgress.classList.remove('hidden');
+        } else {
+            uploadProgress.classList.add('hidden');
+        }
+    }
+}
+
 // Process the selected file
 async function handleFile(file) {
     if (file.size > 10 * 1024 * 1024) {

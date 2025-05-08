@@ -108,22 +108,38 @@ class DocumentRepository extends BaseRepository {
    * @returns {Promise<Document>} - Saved document with ID
    */
   async save(document) {
-    const documentData = document.toFirestore();
-    
-    // Add timestamps if not present
-    if (!documentData.createdAt) {
-      documentData.createdAt = admin.firestore.FieldValue.serverTimestamp();
-    }
-    documentData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
-    
-    if (document.id) {
-      // Update existing document
-      await this.doc(document.id).update(documentData);
-      return Document.fromFirestore(document.id, documentData);
-    } else {
-      // Create new document
-      const docRef = await this.collection().add(documentData);
-      return Document.fromFirestore(docRef.id, documentData);
+    try {
+      const documentData = document.toFirestore();
+      
+      // Add timestamps if not present
+      if (!documentData.createdAt) {
+        documentData.createdAt = admin.firestore.FieldValue.serverTimestamp();
+      }
+      documentData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+      
+      if (document.id) {
+        // Update existing document
+        await this.doc(document.id).set(documentData);
+        
+        // Instead of using the input documentData (which has serverTimestamp objects)
+        // Fetch the actual document to ensure timestamps are resolved
+        const docSnapshot = await this.doc(document.id).get();
+        if (docSnapshot.exists) {
+          return Document.fromFirestore(document.id, docSnapshot.data());
+        }
+        // Fallback to using the original data if document doesn't exist yet
+        return Document.fromFirestore(document.id, documentData);
+      } else {
+        // Create new document
+        const docRef = await this.collection().add(documentData);
+        
+        // Same here - fetch the actual document to ensure timestamps are resolved
+        const docSnapshot = await docRef.get();
+        return Document.fromFirestore(docRef.id, docSnapshot.data());
+      }
+    } catch (error) {
+      console.error('Error saving document:', error);
+      throw error;
     }
   }
   
