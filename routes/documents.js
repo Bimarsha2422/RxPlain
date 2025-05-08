@@ -29,6 +29,9 @@ const upload = multer({
 router.get('/medications/all', isAuthenticated, documentController.getAggregatedMedications);
 router.get('/medications', isAuthenticated, documentController.getMedications);
 
+// Direct document processing routes
+router.post('/process-gemini', isAuthenticated, upload.single('file'), documentController.processDocumentDirect);
+
 // Document simplification route - Must come before /:documentId to avoid conflicts
 router.post('/simplify/:documentId', isAuthenticated, documentController.simplifyDocument);
 

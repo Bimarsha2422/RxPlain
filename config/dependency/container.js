@@ -3,54 +3,52 @@
  */
 class Container {
   constructor() {
-    this._services = new Map();
-    this._factories = new Map();
+    this._registrations = new Map();
     this._instances = new Map();
   }
   
   /**
-   * Register a service with factory function
+   * Register a factory function for a dependency
    * @param {string} name - Service name
-   * @param {Function} factory - Factory function to create service
-   * @returns {Container} - Returns this for chaining
+   * @param {Function} factory - Factory function
    */
   register(name, factory) {
-    this._factories.set(name, factory);
-    return this;
+    this._registrations.set(name, { factory });
   }
   
   /**
-   * Register a service instance directly
+   * Register an instance directly (singleton)
    * @param {string} name - Service name
-   * @param {*} instance - Service instance
-   * @returns {Container} - Returns this for chaining
+   * @param {any} instance - Service instance
    */
   registerInstance(name, instance) {
     this._instances.set(name, instance);
-    return this;
   }
   
   /**
-   * Get service by name
+   * Resolve a service
    * @param {string} name - Service name
-   * @returns {*} - Service instance
-   * @throws {Error} - If service not found
+   * @returns {any} - Service instance
    */
   resolve(name) {
-    // Return from instances if already created
+    // Return existing instance if available
     if (this._instances.has(name)) {
       return this._instances.get(name);
     }
     
-    // Return from factories if registered
-    if (this._factories.has(name)) {
-      const factory = this._factories.get(name);
-      const instance = factory(this);
-      this._instances.set(name, instance);
-      return instance;
+    // Get registration
+    const registration = this._registrations.get(name);
+    if (!registration) {
+      throw new Error(`Service not registered: ${name}`);
     }
     
-    throw new Error(`Service not found: ${name}`);
+    // Create instance
+    const instance = registration.factory(this);
+    
+    // Cache instance for reuse
+    this._instances.set(name, instance);
+    
+    return instance;
   }
 }
 

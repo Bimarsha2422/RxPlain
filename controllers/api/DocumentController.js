@@ -275,6 +275,46 @@ class DocumentController extends BaseController {
     await this._documentService.unshareWithDoctor(documentId, doctorId);
     this.sendSuccess(res, { success: true });
   });
+  
+  /**
+   * Process document with direct file upload (no storage)
+   * Used for immediate processing without saving to storage first
+   * @param {Express.Request} req - Express request
+   * @param {Express.Response} res - Express response
+   */
+  processDocumentDirect = this.handleErrors(async (req, res) => {
+    if (!req.file) {
+      return this.sendError(res, 'No file uploaded', 400);
+    }
+    
+    try {
+      // Use processor factory to get appropriate processor
+      const processorFactory = this._documentService._processorFactory;
+      const processor = processorFactory.getProcessor(req.file.mimetype);
+      
+      // Create a document-like object from the file
+      const fileObj = {
+        fileName: req.file.originalname,
+        fileType: req.file.mimetype,
+        fileSize: req.file.size,
+        buffer: req.file.buffer
+      };
+      
+      // Process directly
+      const result = await processor.processDocument(fileObj);
+      
+      // Return results directly
+      return this.sendSuccess(res, {
+        success: true,
+        document: result.document,
+        medications: result.medications || [],
+        documentType: result.documentType || 'MISCELLANEOUS'
+      });
+    } catch (error) {
+      console.error('Error in direct document processing:', error);
+      return this.sendError(res, error.message || 'Failed to process document', 500);
+    }
+  });
 }
 
 export default DocumentController; 

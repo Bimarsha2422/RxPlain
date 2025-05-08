@@ -1,6 +1,6 @@
 import Container from './container.js';
 import { db, storage } from '../firebase-admin.js';
-import ProcessorFactory from '../../services/processors/ProcessorFactory.js';
+import { ProcessorFactory, DocumentProcessor, GeminiDocumentProcessor } from '../../services/processors/index.js';
 import { UserRepository, DocumentRepository, ConnectionRepository, MedicationScheduleRepository } from '../../repositories/index.js';
 import { UserService, DocumentService, ConnectionService, MedicationScheduleService } from '../../services/core/index.js';
 import { UserController, ConnectionController, DocumentController, MedicationScheduleController } from '../../controllers/api/index.js';
@@ -33,35 +33,31 @@ export function setupContainer() {
     return new MedicationScheduleRepository(c.resolve('db'));
   });
   
+  // Register document processors
+  container.register('geminiProcessor', (c) => {
+    return new GeminiDocumentProcessor(process.env.GEMINI_API_KEY);
+  });
+  
+  container.register('documentProcessor', (c) => {
+    return new DocumentProcessor(process.env.GROQ_API_KEY);
+  });
+  
   // Register processor factory
   container.register('processorFactory', (c) => {
     const factory = new ProcessorFactory();
     
-    // Register document processors for specific mime types
-    // Note: In a real implementation, you would create and register 
-    // specific document processor classes here
-    const defaultProcessor = {
-      extractText: async (document) => {
-        console.log(`Extracting text from ${document.fileName}`);
-        return "Sample extracted text for " + document.fileName;
-      },
-      analyzeDocument: async (document, text) => {
-        console.log(`Analyzing document ${document.fileName}`);
-        return { documentType: "PRESCRIPTION" };
-      },
-      simplifyText: async (document, text, analysis) => {
-        console.log(`Simplifying text for ${document.fileName}`);
-        return "This is a simplified explanation of " + document.fileName;
-      }
-    };
+    // Get the processors from the container
+    const geminiProcessor = c.resolve('geminiProcessor');
+    const groqProcessor = c.resolve('documentProcessor');
     
+    // Register document processors for specific mime types
     factory.registerProcessor(
       ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'], 
-      defaultProcessor
+      geminiProcessor
     );
     
     // Set default processor
-    factory.setDefaultProcessor(defaultProcessor);
+    factory.setDefaultProcessor(groqProcessor);
     
     return factory;
   });

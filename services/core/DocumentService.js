@@ -122,26 +122,27 @@ class DocumentService {
       // Get appropriate processor for document type
       const processor = this._processorFactory.getProcessor(document.fileType);
       
-      // Extract text from document
-      const extractedText = await processor.extractText(document);
+      console.log(`Processing document ${documentId} with appropriate processor`);
       
-      // Analyze document
-      const analysis = await processor.analyzeDocument(document, extractedText);
-      
-      // Simplify text
-      const simplifiedText = await processor.simplifyText(document, extractedText, analysis);
-      
-      console.log(`[DocumentService] Simplified text length for ${documentId}: ${simplifiedText?.length || 0}`);
+      // Process document with processor
+      const result = await processor.processDocument(document);
       
       // Update document with processing results
-      const processedData = {
-        extractedText,
-        analysis,
-        // Include both field names for compatibility
-        simplifiedText,
-        processedContent: simplifiedText, // Add processedContent field to match what's in Firestore
-        documentType: analysis.documentType || 'UNCLASSIFIED'
-      };
+      let processedData = {};
+      
+      if (result.success) {
+        processedData = {
+          extractedText: result.extractedText || '',
+          analysis: {
+            documentType: result.documentType || 'MISCELLANEOUS'
+          },
+          processedContent: result.document || '',
+          documentType: result.documentType || 'MISCELLANEOUS',
+          medications: result.medications || []
+        };
+      } else {
+        throw new Error(result.error || 'Unknown processing error');
+      }
       
       // Mark as processed and update with processed data
       return this._documentRepository.markAsProcessed(documentId, processedData);
