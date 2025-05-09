@@ -18,6 +18,7 @@ import profileRoutes from './routes/profile.js';
 import documentRoutes from './routes/documents.js';
 import userRoutes from './routes/users.js';
 import medScheduleRoutes from './routes/med-schedules.js';
+import reportRoutes from './routes/reports.js';
 import { isAuthenticated, redirectIfAuthenticated } from './middleware/auth.js';
 
 // Initialize env variables
@@ -128,6 +129,8 @@ console.log('[App Setup] Mounted documentRoutes under /api/documents'); // Log m
 app.use('/api/users', userRoutes);
 app.use('/api/med-schedules', medScheduleRoutes);
 console.log('[App Setup] Mounted medScheduleRoutes under /api/med-schedules'); // Log mounting
+app.use('/api/reports', reportRoutes);
+console.log('[App Setup] Mounted reportRoutes under /api/reports'); // Log mounting
 
 // Public Routes
 app.get('/', (req, res) => {

@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Function to fetch reports from the server
     async function fetchReportsFromServer() {
         console.log('[Reports.js] Entering fetchReportsFromServer...');
-        const fetchUrl = '/api/documents/reports';
+        const fetchUrl = '/api/reports';
         console.log(`[Reports.js] Fetching from: ${fetchUrl}`);
         try {
             const response = await fetch(fetchUrl);

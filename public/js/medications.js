@@ -553,15 +553,11 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             console.log('Schedule updated successfully', data);
             
-            // Show success message
-            showNotification('success', `Schedule ${isActive ? 'activated' : 'deactivated'} successfully`);
-            
             // Refresh schedules list or update UI
             loadMedicationsData();
         })
         .catch(error => {
             console.error('Error updating schedule:', error);
-            showNotification('error', `Failed to update schedule: ${error.message}`);
         });
     }
 }); 

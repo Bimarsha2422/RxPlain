@@ -684,16 +684,12 @@ async function deleteDocument(documentId, documentItem) {
                 showEmptyState();
             }
         }, 300);
-
-        // Show a success toast or notification
-        showNotification('Document deleted successfully', 'success');
         
         // Refresh the document list with cache skipping to ensure we have the latest data
         await loadDocuments(true);
     } catch (error) {
         console.error('Error deleting document:', error);
         documentItem.classList.remove('animate-pulse', 'opacity-50');
-        showNotification('Error deleting document', 'error');
     }
 }
 

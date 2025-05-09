@@ -1,6 +1,7 @@
 import Container from './container.js';
 import { db, storage } from '../firebase-admin.js';
 import ProcessorFactory from '../../services/processors/ProcessorFactory.js';
+import GeminiProcessor from '../../services/processors/GeminiProcessor.js';
 import { UserRepository, DocumentRepository, ConnectionRepository, MedicationScheduleRepository } from '../../repositories/index.js';
 import { UserService, DocumentService, ConnectionService, MedicationScheduleService } from '../../services/core/index.js';
 import { UserController, ConnectionController, DocumentController, MedicationScheduleController } from '../../controllers/api/index.js';
@@ -31,6 +32,11 @@ export function setupContainer() {
   
   container.register('medicationScheduleRepository', (c) => {
     return new MedicationScheduleRepository(c.resolve('db'));
+  });
+  
+  // Register AI services
+  container.register('geminiProcessor', () => {
+    return new GeminiProcessor();
   });
   
   // Register processor factory
